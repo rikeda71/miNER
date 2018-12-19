@@ -114,6 +114,12 @@ class Miner():
 
         return report
 
+    def return_answer_named_entities(self) -> Dict[str, List[str]]:
+        return self._return_named_entities(self.answers)
+
+    def return_predict_named_entities(self) -> Dict[str, List[str]]:
+        return self._return_named_entities(self.predicts)
+
     def precision(self, type_select: str) -> float:
         """
         return precision score
@@ -186,7 +192,7 @@ class Miner():
 
         return entities
 
-    def _return_named_entities(self, labels: List[List[str]]) ->Dict[str, List[str]]:
+    def _return_named_entities(self, labels: List[List[str]]) -> Dict[str, List[str]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
@@ -237,9 +243,9 @@ class Miner():
         print('\tprecision\trecall\tf1_score')
         for type_ in self.types:
             print(type_, end='\t')
-            print(result[type_]['precision'], end='\t')
+            print(result[type_]['precision'], end='\t\t')
             print(result[type_]['recall'], end='\t')
-            print(result[type_]['f1_score'], end='\t')
+            print(result[type_]['f1_score'], end='\t\n')
 
     def _is_end_of_label(self, prev_top: str, now_top: str, prev_type: str, now_type: str) -> bool:
         """

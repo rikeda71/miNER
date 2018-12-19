@@ -80,8 +80,26 @@ class TestMiner(unittest.TestCase):
 
         result = self.miner._return_named_entities(self.answers)
         expect = {'known': {'PSN': ['花子'], 'LOC': ['東京']},
-                  'unknown': {'LOC': ['東京スカイツリー', '東京駅'], 'PSN': ['山田太郎', 'ボブ']}}
-        self.assertEqual(result, expect)
+                  'unknown': {'PSN': ['山田太郎', 'ボブ'], 'LOC': ['東京スカイツリー', '東京駅']}}
+        for (rk, rv), (ek, ev) in zip(result.items(), expect.items()):
+            self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
+            self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
+
+    def test_return_answer_named_entities(self):
+
+        result = self.miner.return_answer_named_entities()
+        expect = self.miner._return_named_entities(self.answers)
+        for (rk, rv), (ek, ev) in zip(result.items(), expect.items()):
+            self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
+            self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
+
+    def test_return_predict_named_entities(self):
+
+        result = self.miner.return_predict_named_entities()
+        expect = self.miner._return_named_entities(self.predicts)
+        for (rk, rv), (ek, ev) in zip(result.items(), expect.items()):
+            self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
+            self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
 
     def test__is_end_of_label(self):
 
