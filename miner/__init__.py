@@ -4,7 +4,7 @@ from collections import defaultdict
 
 class Miner():
 
-    def __init__(self, answers: List[List[str]], predicts: List[List[str]], sentences: List[List[str]], known_words: Dict[str: List[str]]):
+    def __init__(self, answers: List[List[str]], predicts: List[List[str]], sentences: List[List[str]], known_words: Dict[str, List[str]]):
         """
 
         :param answers: answer labels list [[labels], [labels], ...]
@@ -20,11 +20,11 @@ class Miner():
         self.predicts = predicts
         self.sentences = sentences
         self.known_words = known_words
-        self.types = tuple(set([seq.split('-')[-1] for seq in self.answers for type_ in seq if seq != 'O']))
+        self.types = tuple(set([type_.split('-')[-1] for seq in self.answers for type_ in seq if type_ != 'O']))
         self.check_known = True
         self.check_unknown = True
 
-    def default_report(self, print_: False) -> Dict[Dict[float]]:
+    def default_report(self, print_: False) -> Dict[str, Dict[str, float]]:
         """
         return report of named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
@@ -39,7 +39,7 @@ class Miner():
         self.check_known = True
         self.check_unknown = True
 
-        report = {type_: defaultdict(float()) for type_ in self.types}
+        report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
             report[type_]['precision'] = self.precision(type_)
@@ -54,7 +54,7 @@ class Miner():
 
         return report
 
-    def known_only_report(self, print_: False) -> Dict[Dict[float]]:
+    def known_only_report(self, print_: False) -> Dict[str, Dict[str, float]]:
         """
         return report of known named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
@@ -69,7 +69,7 @@ class Miner():
         self.check_known = True
         self.check_unknown = False
 
-        report = {type_: defaultdict(float()) for type_ in self.types}
+        report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
             report[type_]['precision'] = self.precision(type_)
@@ -84,7 +84,7 @@ class Miner():
 
         return report
 
-    def unknown_only_report(self, print_: False) -> Dict[Dict[float]]:
+    def unknown_only_report(self, print_: False) -> Dict[str, Dict[str, float]]:
         """
         return report of unknown named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
@@ -99,7 +99,7 @@ class Miner():
         self.check_known = False
         self.check_unknown = True
 
-        report = {type_: defaultdict(float()) for type_ in self.types}
+        report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
             report[type_]['precision'] = self.precision(type_)
@@ -177,10 +177,10 @@ class Miner():
 
             if self._is_end_of_label(prev_top, top, prev_type, type_) \
                 and type_select in [prev_type, ''] \
-                    and self._check_add_entities(words[focus_idx: i - 1]):
+                    and self._check_add_entities(''.join(sentences[focus_idx: i]), type_select):
                     entities.append((prev_type, focus_idx, i - 1))
 
-            focus_idx i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
+            focus_idx = i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
             prev_top = top
             prev_type = type_
 
@@ -190,13 +190,13 @@ class Miner():
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
-        :return  {'known': ['named entity', 'named entity', ... ],
-                  'unknown': ['named entity', 'named entity', ... ]}
+        :return  {'known': {type1: ['named entity', 'named entity', ... ], type2: [...] },
+                  'unknown': {type1: ['named entity', 'named entity', ... ], ...}
         """
 
         knownentities = {type_: [] for type_ in self.types}
         unknownentities = {type_: [] for type_ in self.types}
-        sequences = [label for seq in seqs for label in seq + ['O']]
+        sequences = [seq for label in labels for seq in label + ['O']]
         sentences = [word for sentence in self.sentences for word in sentence + ['']]
         prev_top = 'O'
         prev_type = ''
@@ -207,17 +207,21 @@ class Miner():
             type_ = label.split('-')[-1]
 
             if self._is_end_of_label(prev_top, top, prev_type, type_):
-                word = words[focus_idx: i - 1]
-                if word in self.known_words:
+                word = ''.join(sentences[focus_idx: i])
+                if word in self.known_words[prev_type]:
                     knownentities[prev_type].append(word)
                 else:
                     unknownentities[prev_type].append(word)
 
-            focus_idx i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
+            focus_idx = i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
             prev_top = top
             prev_type = type_
 
-        return entities
+        for type_ in self.types:
+            knownentities[type_] = list(set(knownentities[type_]))
+            unknownentities[type_] = list(set(unknownentities[type_]))
+
+        return {'known': knownentities, 'unknown': unknownentities}
 
     def _print_report(self, result: Dict[str, Dict[str, float]]):
         """
@@ -273,17 +277,18 @@ class Miner():
             return True
         return False
 
-    def _check_add_entities(self, word: str) -> bool:
+    def _check_add_entities(self, word: str, type_: str) -> bool:
         """
         check if adding entities is possible
         :param word: a named entity
+        :param type_: NER label type
         :return: can add entities -> True, cannot add entities -> False
         """
 
         if self.check_known and self.check_unknown:
             return True
-        elif self.check_known and word in self.known_words:
+        elif self.check_known and word in self.known_words[type_]:
             return True
-        elif self.check_unknown and word not in self.known_words:
+        elif self.check_unknown and word not in self.known_words[type_]:
             return True
         return False
