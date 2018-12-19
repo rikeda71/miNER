@@ -24,7 +24,7 @@ class Miner():
         self.check_known = True
         self.check_unknown = True
 
-    def default_report(self, print_: False) -> Dict[str, Dict[str, float]]:
+    def default_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
         """
         return report of named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
@@ -54,7 +54,7 @@ class Miner():
 
         return report
 
-    def known_only_report(self, print_: False) -> Dict[str, Dict[str, float]]:
+    def known_only_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
         """
         return report of known named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
@@ -84,7 +84,7 @@ class Miner():
 
         return report
 
-    def unknown_only_report(self, print_: False) -> Dict[str, Dict[str, float]]:
+    def unknown_only_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
         """
         return report of unknown named entity recognition
         :param print_: print flag. if this flag equal 'True', print report of NER result.
