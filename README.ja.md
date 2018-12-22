@@ -1,8 +1,8 @@
 # miNER
 
-A python library for NER (Named Entity Recognition) evaluation
+固有表現抽出の評価をするpython用ライブラリ
 
-We can evaluate the performance of NER by distinguishing between known entities and unknown entities using this library.
+固有表現の既知未知に分けた評価，固有表現自体の抽出が可能です
 
 
 ## Support
@@ -63,11 +63,11 @@ PSN	0.5		0.5	0.5
 
 |  method  |  description  |
 | ---- | ---- |
-|  default\_report(print\_)  |  return result of named entity recognition. if print\_=True, showing result   |
-|  known\_only\_report(print\_)  |  return result of known named entity recognition.  |
-|  unknown\_only\_report(print\_)  |  return result of unknown named entity recognition.  |
-|  return\_predict\_named\_entities()  |  return named entities along predicted label(predicts). |
-|  return\_answer\_named\_entities()  |  return named entities along answer label(answer). |
+|  default\_report(print\_)  |  固有表現抽出の結果を返す. もし， print\_=True なら，結果をコンソール上に出力します．  |
+|  known\_only\_report(print\_)  |  既知の固有表現に対する抽出結果を返す．  |
+|  unknown\_only\_report(print\_)  |  未知の固有表現抽出に対する抽出結果を返す．  |
+|  return\_predict\_named\_entities()  |  推定したラベルに対する固有表現を返す．  |
+|  return\_answer\_named\_entities()  |  正解のラベルに対する固有表現を返す．  |
 
 
 ## License
