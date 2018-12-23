@@ -240,12 +240,12 @@ class Miner():
                                                          'f1_score': f-measure}, ... }
         """
 
-        print('\tprecision\trecall\tf1_score')
+        print('\tprecision    recall    f1_score')
         for type_ in self.types:
             print(type_, end='\t')
-            print(result[type_]['precision'], end='\t\t')
-            print(result[type_]['recall'], end='\t')
-            print(result[type_]['f1_score'], end='\t\n')
+            print('{0: .3f}'.format(result[type_]['precision']), end='       ')
+            print('{0: .3f}'.format(result[type_]['recall']), end='    ')
+            print('{0: .3f}'.format(result[type_]['f1_score']), end='\n')
 
     def _is_end_of_label(self, prev_top: str, now_top: str, prev_type: str, now_type: str) -> bool:
         """
