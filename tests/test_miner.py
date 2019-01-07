@@ -40,9 +40,9 @@ class TestMiner(unittest.TestCase):
         result = self.miner.default_report(False)
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
-                         ['precision', 'recall', 'f1_score'])
-        self.assertEqual({'PSN': {'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0}},
+                         ['precision', 'recall', 'f1_score', 'num'])
+        self.assertEqual({'PSN': {'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5, 'num': 4},
+                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 3}},
                          result)
 
     def test_known_only_report(self):
@@ -50,9 +50,9 @@ class TestMiner(unittest.TestCase):
         result = self.miner.known_only_report(False)
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
-                         ['precision', 'recall', 'f1_score'])
-        self.assertEqual({'PSN': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0}},
+                         ['precision', 'recall', 'f1_score', 'num'])
+        self.assertEqual({'PSN': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 2},
+                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 1}},
                          result)
 
     def test_unknown_only_report(self):
@@ -60,9 +60,9 @@ class TestMiner(unittest.TestCase):
         result = self.miner.unknown_only_report(False)
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
-                         ['precision', 'recall', 'f1_score'])
-        self.assertEqual({'PSN': {'precision': 0, 'recall': 0, 'f1_score': 0},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0}},
+                         ['precision', 'recall', 'f1_score', 'num'])
+        self.assertEqual({'PSN': {'precision': 0, 'recall': 0, 'f1_score': 0, 'num': 2},
+                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 2}},
                          result)
 
     def test__return_entities_indexes(self):

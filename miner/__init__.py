@@ -45,6 +45,7 @@ class Miner():
             report[type_]['precision'] = self.precision(type_)
             report[type_]['recall'] = self.recall(type_)
             report[type_]['f1_score'] = self.f1_score(type_)
+            report[type_]['num'] = self.num_of_ner(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -75,6 +76,7 @@ class Miner():
             report[type_]['precision'] = self.precision(type_)
             report[type_]['recall'] = self.recall(type_)
             report[type_]['f1_score'] = self.f1_score(type_)
+            report[type_]['num'] = self.num_of_ner(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -105,6 +107,7 @@ class Miner():
             report[type_]['precision'] = self.precision(type_)
             report[type_]['recall'] = self.recall(type_)
             report[type_]['f1_score'] = self.f1_score(type_)
+            report[type_]['num'] = self.num_of_ner(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -160,6 +163,9 @@ class Miner():
         p = self.precision(type_select)
         r = self.recall(type_select)
         return 2 * p * r / (p + r) if p + r > 0 else 0
+
+    def num_of_ner(self, type_select: str) -> int:
+        return len(self._return_entities_indexes(self.answers, type_select))
 
     def _return_entities_indexes(self, seqs: List[List[str]], type_select: str) -> List[Tuple[str, int, int]]:
         """
@@ -240,12 +246,13 @@ class Miner():
                                                          'f1_score': f-measure}, ... }
         """
 
-        print('\tprecision    recall    f1_score')
+        print('\n\tprecision    recall    f1_score   num')
         for type_ in self.types:
             print(type_, end='\t')
             print('{0: .3f}'.format(result[type_]['precision']), end='       ')
             print('{0: .3f}'.format(result[type_]['recall']), end='    ')
-            print('{0: .3f}'.format(result[type_]['f1_score']), end='\n')
+            print('{0: .3f}'.format(result[type_]['f1_score']), end='     ')
+            print('{0: d}'.format(result[type_]['num']), end='\n')
 
     def _is_end_of_label(self, prev_top: str, now_top: str, prev_type: str, now_type: str) -> bool:
         """

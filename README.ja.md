@@ -52,9 +52,9 @@ pip install git+https://github.com/Andolab/miNER#egg=miNER
 >>> knowns = {'PSN': ['花子'], 'LOC': ['東京']} # known words (words included in training data)
 >>> m = Miner(answers, predicts, sentences, knowns)
 >>> m.default_report(True)
-	precision	recall	f1_score
-LOC	1.0		1.0	1.0
-PSN	0.5		0.5	0.5
+	precision    recall    f1_score   num
+PSN	 0.500        0.500     0.500      4
+LOC	 1.000        1.000     1.000      3
 >>> m.return_predict_named_entities()
 {'known': {'PSN': ['花子'], 'LOC': ['東京']}, 'unknown': {'PSN': ['太郎', '山田'], 'LOC': ['東京駅', '東京スカイツリー']}}
 ```
