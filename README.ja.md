@@ -24,7 +24,7 @@
 ## Installation
 
 ```shell
-pip install miner
+pip install mi-ner
 ```
 
 
