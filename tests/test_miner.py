@@ -35,6 +35,9 @@ class TestMiner(unittest.TestCase):
         self.assertEqual(self.miner.predicts, self.predicts)
         self.assertEqual(self.miner.sentences, self.sentences)
         self.assertEqual(self.miner.known_words, self.knowns)
+        # check no setting known words
+        m = Miner(self.answers, self.predicts, self.sentences)
+        self.assertEqual(m.known_words, {'PSN': [], 'LOC': []})
 
     def test_default_report(self):
 
