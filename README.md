@@ -24,7 +24,7 @@ We can evaluate the performance of NER by distinguishing between known entities 
 ## Installation
 
 ```shell
-pip install miner
+pip install mi-ner
 ```
 
 

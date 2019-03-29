@@ -5,8 +5,8 @@ with open('README.md', 'r', encoding='utf-8') as f:
     readme = f.read()
 
 setup(
-    name='miNER',
-    version='0.0.1',
+    name='mi-ner',
+    version='0.0.2',
     description='A python library for named entity recognition evaluation',
     long_description=readme,
     long_description_content_type='text/markdown',
