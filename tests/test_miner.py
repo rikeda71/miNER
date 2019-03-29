@@ -26,7 +26,8 @@ class TestMiner(unittest.TestCase):
 
         self.knowns = {'PSN': ['花子'], 'LOC': ['東京']}
 
-        self.miner = Miner(self.answers, self.predicts, self.sentences, self.knowns)
+        self.miner = Miner(self.answers, self.predicts,
+                           self.sentences, self.knowns)
 
     def test_initialize(self):
 
@@ -41,8 +42,10 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5, 'num': 4},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 3}},
+        self.assertEqual({'PSN': {'precision': 0.5, 'recall': 0.5,
+                                  'f1_score': 0.5, 'num': 4},
+                          'LOC': {'precision': 1.0, 'recall': 1.0,
+                                  'f1_score': 1.0, 'num': 3}},
                          result)
 
     def test_known_only_report(self):
@@ -51,8 +54,10 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 2},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 1}},
+        self.assertEqual({'PSN': {'precision': 1.0, 'recall': 1.0,
+                                  'f1_score': 1.0, 'num': 2},
+                          'LOC': {'precision': 1.0, 'recall': 1.0,
+                                  'f1_score': 1.0, 'num': 1}},
                          result)
 
     def test_unknown_only_report(self):
@@ -61,17 +66,19 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 0, 'recall': 0, 'f1_score': 0, 'num': 2},
-                          'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 2}},
+        self.assertEqual({'PSN': {'precision': 0, 'recall': 0,
+                                  'f1_score': 0, 'num': 2},
+                          'LOC': {'precision': 1.0, 'recall': 1.0,
+                                  'f1_score': 1.0, 'num': 2}},
                          result)
 
-    def test__return_entities_indexes(self):
+    def test__entity_indexes(self):
 
-        result = self.miner._return_entities_indexes(self.answers, 'PSN')
+        result = self.miner._entity_indexes(self.answers, 'PSN')
         expect = [('PSN', 0, 0), ('PSN', 9, 10),
                   ('PSN', 20, 20), ('PSN', 23, 23)]
         self.assertEqual(result, expect)
-        result = self.miner._return_entities_indexes(self.answers, 'LOC')
+        result = self.miner._entity_indexes(self.answers, 'LOC')
         expect = [('LOC', 3, 3), ('LOC', 13, 14),
                   ('LOC', 26, 28)]
         self.assertEqual(result, expect)
@@ -79,8 +86,10 @@ class TestMiner(unittest.TestCase):
     def test__return_named_entities(self):
 
         result = self.miner._return_named_entities(self.answers)
-        expect = {'known': {'PSN': ['花子'], 'LOC': ['東京']},
-                  'unknown': {'PSN': ['山田太郎', 'ボブ'], 'LOC': ['東京スカイツリー', '東京駅']}}
+        expect = {'known': {'PSN': ['花子'],
+                            'LOC': ['東京']},
+                  'unknown': {'PSN': ['山田太郎', 'ボブ'],
+                              'LOC': ['東京スカイツリー', '東京駅']}}
         for (rk, rv), (ek, ev) in zip(result.items(), expect.items()):
             self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
             self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
@@ -104,52 +113,75 @@ class TestMiner(unittest.TestCase):
     def test__is_end_of_label(self):
 
         labels = ['B', 'I', 'O', 'S', 'B', 'I', 'I', 'E', 'O', 'O', 'B', 'B']
-        self.assertFalse(self.miner._is_end_of_label(labels[0], labels[1], 'a', 'a'))
-        self.assertTrue(self.miner._is_end_of_label(labels[1], labels[2], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[2], labels[3], 'a', 'a'))
-        self.assertTrue(self.miner._is_end_of_label(labels[3], labels[4], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[4], labels[5], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[5], labels[6], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[6], labels[7], 'a', 'a'))
-        self.assertTrue(self.miner._is_end_of_label(labels[7], labels[8], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[8], labels[9], 'a', 'a'))
-        self.assertFalse(self.miner._is_end_of_label(labels[9], labels[10], 'a', 'a'))
-        self.assertTrue(self.miner._is_end_of_label(labels[10], labels[11], 'a', 'a'))
-        self.assertTrue(self.miner._is_end_of_label(labels[11], '', 'a', ''))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[0], labels[1], 'a', 'a'))
+        self.assertTrue(self.miner._is_end_of_label(
+            labels[1], labels[2], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[2], labels[3], 'a', 'a'))
+        self.assertTrue(self.miner._is_end_of_label(
+            labels[3], labels[4], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[4], labels[5], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[5], labels[6], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[6], labels[7], 'a', 'a'))
+        self.assertTrue(self.miner._is_end_of_label(
+            labels[7], labels[8], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[8], labels[9], 'a', 'a'))
+        self.assertFalse(self.miner._is_end_of_label(
+            labels[9], labels[10], 'a', 'a'))
+        self.assertTrue(self.miner._is_end_of_label(
+            labels[10], labels[11], 'a', 'a'))
+        self.assertTrue(self.miner._is_end_of_label(
+            labels[11], '', 'a', ''))
         self.assertTrue(self.miner._is_end_of_label('B', 'I', 'a', 'b'))
 
     def test__is_begin_of_label(self):
 
         labels = ['B', 'I', 'O', 'S', 'B', 'I', 'I', 'E', 'O', 'O', 'B', 'B']
-        self.assertTrue(self.miner._is_begin_of_label('', labels[0], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[1], labels[2], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(labels[2], labels[3], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(labels[3], labels[4], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[4], labels[5], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[5], labels[6], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[6], labels[7], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[7], labels[8], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(labels[8], labels[9], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(labels[9], labels[10], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(labels[10], labels[11], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(
+            '', labels[0], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[1], labels[2], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(
+            labels[2], labels[3], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(
+            labels[3], labels[4], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[4], labels[5], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[5], labels[6], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[6], labels[7], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[7], labels[8], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(
+            labels[8], labels[9], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(
+            labels[9], labels[10], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(
+            labels[10], labels[11], 'a', 'a'))
         self.assertTrue(self.miner._is_begin_of_label('B', 'I', 'a', 'b'))
 
-    def test__check_add_entities(self):
+    def test__check_add_entity(self):
 
-        # なんでもOK
+        # assert all
         self.miner.check_known = True
         self.miner.check_unknown = True
-        self.assertTrue(self.miner._check_add_entities('', ''))
-        self.assertTrue(self.miner._check_add_entities('花子', 'PSN'))
-        # 既知のみOK
+        self.assertTrue(self.miner._check_add_entity('', ''))
+        self.assertTrue(self.miner._check_add_entity('花子', 'PSN'))
+        # assert known
         self.miner.check_known = True
         self.miner.check_unknown = False
-        self.assertTrue(self.miner._check_add_entities('花子', 'PSN'))
-        self.assertTrue(self.miner._check_add_entities('東京', 'LOC'))
-        self.assertFalse(self.miner._check_add_entities('ボブ', 'PSN'))
-        # 未知のみOK
+        self.assertTrue(self.miner._check_add_entity('花子', 'PSN'))
+        self.assertTrue(self.miner._check_add_entity('東京', 'LOC'))
+        self.assertFalse(self.miner._check_add_entity('ボブ', 'PSN'))
+        # assert unknown
         self.miner.check_known = False
         self.miner.check_unknown = True
-        self.assertTrue(self.miner._check_add_entities('ボブ', 'PSN'))
-        self.assertTrue(self.miner._check_add_entities('東京スカイツリー', 'LOC'))
-        self.assertFalse(self.miner._check_add_entities('東京', 'LOC'))
+        self.assertTrue(self.miner._check_add_entity('ボブ', 'PSN'))
+        self.assertTrue(self.miner._check_add_entity('東京スカイツリー', 'LOC'))
+        self.assertFalse(self.miner._check_add_entity('東京', 'LOC'))

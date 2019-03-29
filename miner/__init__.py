@@ -4,9 +4,11 @@ from collections import defaultdict
 
 class Miner():
 
-    def __init__(self, answers: List[List[str]], predicts: List[List[str]], sentences: List[List[str]], known_words: Dict[str, List[str]]):
+    def __init__(self, answers: List[List[str]],
+                 predicts: List[List[str]],
+                 sentences: List[List[str]],
+                 known_words: Dict[str, List[str]] = {}):
         """
-
         :param answers: answer labels list [[labels], [labels], ...]
         :param predicts: predicrt labels list [[labels], [labels], ...]
         :param sentences: morphs list [[morphs], [morphs], ...]
@@ -19,21 +21,29 @@ class Miner():
         self.answers = answers
         self.predicts = predicts
         self.sentences = sentences
-        self.known_words = known_words
-        self.types = tuple(set([type_.split('-')[-1] for seq in self.answers for type_ in seq if type_ != 'O']))
+        self.types = tuple(
+            set([type_.split('-')[-1]
+                 for seq in self.answers
+                 for type_ in seq if type_ != 'O'
+                 ]))
+        self.known_words = {type_: [] for type_ in self.types}\
+            if known_words == {} else known_words
         self.check_known = True
         self.check_unknown = True
 
-    def default_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
+    def default_report(self, print_: bool = False)\
+            -> Dict[str, Dict[str, float]]:
         """
         return report of named entity recognition
-        :param print_: print flag. if this flag equal 'True', print report of NER result.
-        :return: reports of NER result {'label0': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure},
-                                        'label1': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure}, ... }
+        :param print_: print flag.
+                       if this flag equal 'True', print report of NER result.
+        :return: reports of NER result
+                 {'label0': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure},
+                  'label1': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure}, ... }
         """
 
         self.check_known = True
@@ -55,16 +65,19 @@ class Miner():
 
         return report
 
-    def known_only_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
+    def known_only_report(self, print_: bool = False)\
+            -> Dict[str, Dict[str, float]]:
         """
         return report of known named entity recognition
-        :param print_: print flag. if this flag equal 'True', print report of NER result.
-        :return: reports of NER result {'label0': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure},
-                                        'label1': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure}, ... }
+        :param print_: print flag.
+                       if this flag equal 'True', print report of NER result.
+        :return: reports of NER result
+                 {'label0': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure},
+                  'label1': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure}, ... }
         """
 
         self.check_known = True
@@ -86,16 +99,19 @@ class Miner():
 
         return report
 
-    def unknown_only_report(self, print_: bool=False) -> Dict[str, Dict[str, float]]:
+    def unknown_only_report(self, print_: bool = False)\
+            -> Dict[str, Dict[str, float]]:
         """
         return report of unknown named entity recognition
-        :param print_: print flag. if this flag equal 'True', print report of NER result.
-        :return: reports of NER result {'label0': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure},
-                                        'label1': {'precision': precision param,
-                                                   'recall': recall param,
-                                                   'f1_score': f-measure}, ... }
+        :param print_: print flag.
+                       if this flag equal 'True', print report of NER result.
+        :return: reports of NER result
+                 {'label0': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure},
+                  'label1': {'precision': precision param,
+                             'recall': recall param,
+                             'f1_score': f-measure}, ... }
         """
 
         self.check_known = False
@@ -130,8 +146,8 @@ class Miner():
         :return: precision score
         """
 
-        ans_entities = set(self._return_entities_indexes(self.answers, type_select))
-        pred_entities = set(self._return_entities_indexes(self.predicts, type_select))
+        ans_entities = set(self._entity_indexes(self.answers, type_select))
+        pred_entities = set(self._entity_indexes(self.predicts, type_select))
 
         correct_num = len(ans_entities & pred_entities)
         pred_num = len(pred_entities)
@@ -145,8 +161,8 @@ class Miner():
         :return: recall score
         """
 
-        ans_entities = set(self._return_entities_indexes(self.answers, type_select))
-        pred_entities = set(self._return_entities_indexes(self.predicts, type_select))
+        ans_entities = set(self._entity_indexes(self.answers, type_select))
+        pred_entities = set(self._entity_indexes(self.predicts, type_select))
 
         correct_num = len(ans_entities & pred_entities)
         ans_num = len(ans_entities)
@@ -165,56 +181,68 @@ class Miner():
         return 2 * p * r / (p + r) if p + r > 0 else 0
 
     def num_of_ner(self, type_select: str) -> int:
-        return len(self._return_entities_indexes(self.answers, type_select))
+        return len(self._entity_indexes(self.answers, type_select))
 
-    def _return_entities_indexes(self, seqs: List[List[str]], type_select: str) -> List[Tuple[str, int, int]]:
+    def _entity_indexes(self, seqs: List[List[str]], type_select: str)\
+            -> List[Tuple[str, int, int]]:
         """
         return named entities indexes
         :param seqs: labels list [[labels0], [labels1], ... ]
         :param type_select: NER label type
-        :return: chunks of NER label type, index of begin of named entity and index of end of named entity
-                 [(type, begin index, end index), (type, begin index, end index), ... ]
+        :return: chunks of NER label type, index of begin of named entity
+                 and index of end of named entity
+                 [(type, begin index, end index),
+                  (type, begin index, end index), ... ]
         """
 
         entities = []
         sequences = [label for seq in seqs for label in seq + ['O']]
-        sentences = [word for sentence in self.sentences for word in sentence + ['']]
+        sentences = [word for sentence in self.sentences
+                     for word in sentence + ['']]
         prev_top = 'O'
         prev_type = ''
         focus_idx = 0
 
-        for i, (label, words) in enumerate(zip(sequences + ['O'], sentences + [''])):
+        seq_label_pairs = zip(sequences + ['O'], sentences + [''])
+        for i, (label, words) in enumerate(seq_label_pairs):
             top = label[0]
             type_ = label.split('-')[-1]
+            word = ''.join(sentences[focus_idx: i])
 
             if self._is_end_of_label(prev_top, top, prev_type, type_) \
                 and type_select in [prev_type, ''] \
-                    and self._check_add_entities(''.join(sentences[focus_idx: i]), type_select):
-                    entities.append((prev_type, focus_idx, i - 1))
+                    and self._check_add_entity(word, type_select):
+                entities.append((prev_type, focus_idx, i - 1))
 
-            focus_idx = i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
+            if self._is_begin_of_label(prev_top, top, prev_type, type_):
+                focus_idx = i
             prev_top = top
             prev_type = type_
 
         return entities
 
-    def _return_named_entities(self, labels: List[List[str]]) -> Dict[str, List[str]]:
+    def _return_named_entities(self, labels: List[List[str]])\
+            -> Dict[str, List[str]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
-        :return  {'known': {type1: ['named entity', 'named entity', ... ], type2: [...] },
-                  'unknown': {type1: ['named entity', 'named entity', ... ], ...}
+        :return  {'known': {type1: ['named entity', 'named entity', ... ],
+                            type2: [...] },
+                  'unknown': {type1: ['named entity', 'named entity', ... ],
+                              type2: [...] }}
         """
 
         knownentities = {type_: [] for type_ in self.types}
         unknownentities = {type_: [] for type_ in self.types}
         sequences = [seq for label in labels for seq in label + ['O']]
-        sentences = [word for sentence in self.sentences for word in sentence + ['']]
+        sentences = [word for sentence in self.sentences
+                     for word in sentence + ['']]
         prev_top = 'O'
         prev_type = ''
         focus_idx = 0
 
-        for i, (label, words) in enumerate(zip(sequences + ['O'], sentences + [''])):
+        seq_label_pairs = zip(sequences + ['O'], sentences + [''])
+        for i, (label, words) in enumerate(seq_label_pairs):
             top = label[0]
             type_ = label.split('-')[-1]
 
@@ -225,7 +253,8 @@ class Miner():
                 else:
                     unknownentities[prev_type].append(word)
 
-            focus_idx = i if self._is_begin_of_label(prev_top, top, prev_type, type_) else focus_idx
+            if self._is_begin_of_label(prev_top, top, prev_type, type_):
+                focus_idx = i
             prev_top = top
             prev_type = type_
 
@@ -238,12 +267,13 @@ class Miner():
     def _print_report(self, result: Dict[str, Dict[str, float]]):
         """
         print report of NER result
-        :param result: reports of NER result {'label0': {'precision': precision param,
-                                                         'recall': recall param,
-                                                         'f1_score': f-measure},
-                                              'label1': {'precision': precision param,
-                                                         'recall': recall param,
-                                                         'f1_score': f-measure}, ... }
+        :param result: reports of NER result
+                       {'label0': {'precision': precision param,
+                                   'recall': recall param,
+                                    'f1_score': f-measure},
+                        'label1': {'precision': precision param,
+                                   'recall': recall param,
+                                   'f1_score': f-measure}, ... }
         """
 
         print('\n\tprecision    recall    f1_score   num')
@@ -254,7 +284,8 @@ class Miner():
             print('{0: .3f}'.format(result[type_]['f1_score']), end='     ')
             print('{0: d}'.format(result[type_]['num']), end='\n')
 
-    def _is_end_of_label(self, prev_top: str, now_top: str, prev_type: str, now_type: str) -> bool:
+    def _is_end_of_label(self, prev_top: str, now_top: str,
+                         prev_type: str, now_type: str) -> bool:
         """
         check if named entity label is end
         :param prev_top:
@@ -274,7 +305,8 @@ class Miner():
             return True
         return False
 
-    def _is_begin_of_label(self, prev_top: str, now_top: str, prev_type: str, now_type: str) -> bool:
+    def _is_begin_of_label(self, prev_top: str, now_top: str,
+                           prev_type: str, now_type: str) -> bool:
         """
         check if named entity label is begin
         :param prev_top: previous scheme
@@ -290,9 +322,9 @@ class Miner():
             return True
         return False
 
-    def _check_add_entities(self, word: str, type_: str) -> bool:
+    def _check_add_entity(self, word: str, type_: str) -> bool:
         """
-        check if adding entities is possible
+        adding entity check
         :param word: a named entity
         :param type_: NER label type
         :return: can add entities -> True, cannot add entities -> False
