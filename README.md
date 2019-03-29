@@ -24,7 +24,7 @@ We can evaluate the performance of NER by distinguishing between known entities 
 ## Installation
 
 ```shell
-pip install git+https://github.com/Andolab/miNER#egg=miNER
+pip install miner
 ```
 
 
@@ -55,6 +55,7 @@ pip install git+https://github.com/Andolab/miNER#egg=miNER
 	precision    recall    f1_score   num
 PSN	 0.500        0.500     0.500      4
 LOC	 1.000        1.000     1.000      3
+{'PSN': {'precision': 0.5, 'recall': 0.5, 'f1_score': 0.5, 'num': 4}, 'LOC': {'precision': 1.0, 'recall': 1.0, 'f1_score': 1.0, 'num': 3}}
 >>> m.return_predict_named_entities()
 {'known': {'PSN': ['花子'], 'LOC': ['東京']}, 'unknown': {'PSN': ['太郎', '山田'], 'LOC': ['東京駅', '東京スカイツリー']}}
 ```
