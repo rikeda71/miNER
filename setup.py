@@ -1,29 +1,27 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
-with open('README.md') as f:
+with open('README.md', 'r', encoding='utf-8') as f:
     readme = f.read()
-
-with open('LICENSE') as f:
-    license = f.read()
 
 setup(
     name='miNER',
-    version='1.0.0',
+    version='0.0.1',
     description='A python library for named entity recognition evaluation',
     long_description=readme,
-    author='AndoLab',
-    author_email='ando.laboratory@gmail.com',
+    long_description_content_type='text/markdown',
+    author='Ryuya Ikeda',
+    author_email='rikeda71@gmail.com',
     url='https://github.com/Andolab/miNER',
-    license=license,
-    packages=['miner'],
-    python_requires='>=3.5',
+    license='MIT',
+    keywords=['named entity recognition', 'nlp',
+              'natural language processing'],
     classifiers=[
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.5',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
-        'License :: OSI Approved :: MIT License',
+        'Topic :: Text Processing',
     ],
+    packages=['miner'],
     test_suite='tests',
 )
