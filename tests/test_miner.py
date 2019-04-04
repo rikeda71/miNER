@@ -97,6 +97,23 @@ class TestMiner(unittest.TestCase):
             self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
             self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
 
+    def test_return_miss_labelings(self):
+
+        result = self.miner.return_miss_labelings()
+        expect = [{'answer': ['B-PSN', 'I-PSN', 'O', 'O',
+                              'B-LOC', 'I-LOC', 'O', 'O', 'O', 'O'],
+                   'predict': ['B-PSN', 'B-PSN', 'O', 'O',
+                               'B-LOC', 'I-LOC', 'O', 'O', 'O', 'O'],
+                   'sentence': ['山田', '太郎', '君', 'は',
+                                '東京', '駅', 'に', '向かい', 'まし', 'た']},
+                  {'answer': ['S-PSN', 'O', 'O', 'S-PSN', 'O', 'O',
+                              'B-LOC', 'I-LOC', 'E-LOC', 'O', 'O', 'O', 'O'],
+                   'predict': ['S-PSN', 'O', 'O', 'O', 'O', 'O',
+                               'B-LOC', 'I-LOC', 'E-LOC', 'O', 'O', 'O', 'O'],
+                   'sentence': ['花子', 'さん', 'と', 'ボブ', 'くん', 'は',
+                                '東京', 'スカイ', 'ツリー', 'に', '行き', 'まし', 'た']}]
+        self.assertEqual(result, expect)
+
     def test_return_answer_named_entities(self):
 
         result = self.miner.return_answer_named_entities()
@@ -145,29 +162,18 @@ class TestMiner(unittest.TestCase):
     def test__is_begin_of_label(self):
 
         labels = ['B', 'I', 'O', 'S', 'B', 'I', 'I', 'E', 'O', 'O', 'B', 'B']
-        self.assertTrue(self.miner._is_begin_of_label(
-            '', labels[0], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[1], labels[2], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(
-            labels[2], labels[3], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(
-            labels[3], labels[4], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[4], labels[5], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[5], labels[6], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[6], labels[7], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[7], labels[8], 'a', 'a'))
-        self.assertFalse(self.miner._is_begin_of_label(
-            labels[8], labels[9], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(
-            labels[9], labels[10], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label(
-            labels[10], labels[11], 'a', 'a'))
-        self.assertTrue(self.miner._is_begin_of_label('B', 'I', 'a', 'b'))
+        self.assertTrue(self.miner._is_begin_of_label(labels[0], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[2], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(labels[3], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(labels[4], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[5], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[6], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[7], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[8], 'a', 'a'))
+        self.assertFalse(self.miner._is_begin_of_label(labels[9], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(labels[10], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label(labels[11], 'a', 'a'))
+        self.assertTrue(self.miner._is_begin_of_label('I', 'a', 'b'))
 
     def test__check_add_entity(self):
 

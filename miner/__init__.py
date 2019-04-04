@@ -2,7 +2,7 @@ from typing import List, Dict, Tuple
 from collections import defaultdict
 
 
-class Miner():
+class Miner:
 
     def __init__(self, answers: List[List[str]],
                  predicts: List[List[str]],
@@ -133,10 +133,25 @@ class Miner():
 
         return report
 
-    def return_answer_named_entities(self) -> Dict[str, List[str]]:
+    def return_miss_labelings(self) -> List[Dict[str, List[str]]]:
+        """
+        get miss labeling sentences, predict labels, and answer labels
+        :return: miss labeling sentences, predict labels, and answer labels
+                 [{'sentence': ['', '', ..., ''],
+                  'predict': ['', '', ..., ''],
+                  'answer': ['', '', ..., '']},
+                  {'sentence': ...
+                 ]
+        """
+
+        return [{'sentence': s, 'predict': p, 'answer': a}
+                for p, a, s in zip(self.predicts, self.answers, self.sentences)
+                if p != a]
+
+    def return_answer_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.answers)
 
-    def return_predict_named_entities(self) -> Dict[str, List[str]]:
+    def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
     def precision(self, type_select: str) -> float:
@@ -214,7 +229,7 @@ class Miner():
                     and self._check_add_entity(word, type_select):
                 entities.append((prev_type, focus_idx, i - 1))
 
-            if self._is_begin_of_label(prev_top, top, prev_type, type_):
+            if self._is_begin_of_label(top, prev_type, type_):
                 focus_idx = i
             prev_top = top
             prev_type = type_
@@ -222,7 +237,7 @@ class Miner():
         return entities
 
     def _return_named_entities(self, labels: List[List[str]])\
-            -> Dict[str, List[str]]:
+            -> Dict[str, Dict[str, List[str]]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
@@ -253,7 +268,7 @@ class Miner():
                 else:
                     unknownentities[prev_type].append(word)
 
-            if self._is_begin_of_label(prev_top, top, prev_type, type_):
+            if self._is_begin_of_label(top, prev_type, type_):
                 focus_idx = i
             prev_top = top
             prev_type = type_
@@ -282,7 +297,7 @@ class Miner():
             print('{0: .3f}'.format(result[type_]['precision']), end='       ')
             print('{0: .3f}'.format(result[type_]['recall']), end='    ')
             print('{0: .3f}'.format(result[type_]['f1_score']), end='     ')
-            print('{0: d}'.format(result[type_]['num']), end='\n')
+            print('{0: d}'.format(int(result[type_]['num'])), end='\n')
 
     def _is_end_of_label(self, prev_top: str, now_top: str,
                          prev_type: str, now_type: str) -> bool:
@@ -305,7 +320,7 @@ class Miner():
             return True
         return False
 
-    def _is_begin_of_label(self, prev_top: str, now_top: str,
+    def _is_begin_of_label(self, now_top: str,
                            prev_type: str, now_type: str) -> bool:
         """
         check if named entity label is begin
