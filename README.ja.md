@@ -69,6 +69,7 @@ LOC	 1.000        1.000     1.000      3
 |  unknown\_only\_report(print\_)  |  未知の固有表現抽出に対する抽出結果を返す．  |
 |  return\_predict\_named\_entities()  |  推定したラベルに対する固有表現を返す．  |
 |  return\_answer\_named\_entities()  |  正解のラベルに対する固有表現を返す．  |
+|  return\_miss\_labelings() | ラベリングに失敗した文と正解・推定ラベルを返す． |
 
 
 ## License
