@@ -69,6 +69,7 @@ LOC	 1.000        1.000     1.000      3
 |  unknown\_only\_report(print\_)  |  return result of unknown named entity recognition.  |
 |  return\_predict\_named\_entities()  |  return named entities along predicted label(predicts). |
 |  return\_answer\_named\_entities()  |  return named entities along answer label(answer). |
+|  return\_miss\_labelings() | return miss labeling sentences. |
 
 
 ## License

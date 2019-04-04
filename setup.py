@@ -6,7 +6,7 @@ with open('README.md', 'r', encoding='utf-8') as f:
 
 setup(
     name='mi-ner',
-    version='0.0.2',
+    version='0.1.0',
     description='A python library for named entity recognition evaluation',
     long_description=readme,
     long_description_content_type='text/markdown',
