@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from collections import defaultdict
 
 
@@ -7,7 +7,7 @@ class Miner:
     def __init__(self, answers: List[List[str]],
                  predicts: List[List[str]],
                  sentences: List[List[str]],
-                 known_words: Dict[str, List[str]] = {}):
+                 known_words: Dict[str, List[str]] = None):
         """
         :param answers: answer labels list [[labels], [labels], ...]
         :param predicts: predicrt labels list [[labels], [labels], ...]
@@ -27,7 +27,9 @@ class Miner:
                  for type_ in seq if type_ != 'O'
                  ]))
         self.known_words = {type_: [] for type_ in self.types}\
-            if known_words == {} else known_words
+            if known_words is None else known_words
+        self.known_words.update(
+            {'ALL': [NE for k, v in self.known_words.items() for NE in v]})
         self.check_known = True
         self.check_unknown = True
 
@@ -198,6 +200,42 @@ class Miner:
     def num_of_ner(self, type_select: str) -> int:
         return len(self._entity_indexes(self.answers, type_select))
 
+    def segmentation_score(self, mode: str = 'default', print_: bool = True) \
+            -> Dict[str, Union[float, int]]:
+        """
+        return segmentation score
+        (return parcentages of matching answer and predict labels)
+        :param mode: default, unknown, or known
+        :param print_: print flag.
+                       if this flag equal 'True', print report of NER result.
+        :return segmentation score
+        """
+
+        if mode == 'unknown':
+            self.check_known = False
+            self.check_unknown = True
+        elif mode == 'known':
+            self.check_known = True
+            self.check_unknown = False
+        else:
+            self.check_known = True
+            self.check_unknown = True
+
+        report = {'precision': self.precision('ALL'),
+                  'recall': self.recall('ALL'),
+                  'f1_score': self.f1_score('ALL'),
+                  'num': self.num_of_ner('ALL')}
+
+        if print_:
+            print('\n\tprecision    recall    f1_score   num')
+            print('SEG', end='\t')
+            print('{0: .3f}'.format(report['precision']), end='       ')
+            print('{0: .3f}'.format(report['recall']), end='    ')
+            print('{0: .3f}'.format(report['f1_score']), end='     ')
+            print('{0: d}'.format(int(report['num'])), end='\n')
+
+        return report
+
     def _entity_indexes(self, seqs: List[List[str]], type_select: str)\
             -> List[Tuple[str, int, int]]:
         """
@@ -225,7 +263,7 @@ class Miner:
             word = ''.join(sentences[focus_idx: i])
 
             if self._is_end_of_label(prev_top, top, prev_type, type_) \
-                and type_select in [prev_type, ''] \
+                and type_select in [prev_type, '', 'ALL'] \
                     and self._check_add_entity(word, type_select):
                 entities.append((prev_type, focus_idx, i - 1))
 
@@ -324,7 +362,6 @@ class Miner:
                            prev_type: str, now_type: str) -> bool:
         """
         check if named entity label is begin
-        :param prev_top: previous scheme
         :param now_top: now scheme
         :param prev_type: previous label
         :param now_type: now label
