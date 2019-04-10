@@ -14,9 +14,9 @@ class TestMiner(unittest.TestCase):
             'S-PSN O O S-PSN O O B-LOC I-LOC E-LOC O O O O'.split(' ')
         ]
         self.predicts = [
-            'B-PSN O O B-LOC O O O O'.split(' '),
+            'B-PSN O O B-LOC O B-LOC O O'.split(' '),
             'B-PSN B-PSN O O B-LOC I-LOC O O O O'.split(' '),
-            'S-PSN O O O O O B-LOC I-LOC E-LOC O O O O'.split(' ')
+            'O O O O O O B-LOC I-LOC E-LOC O B-PSN O O'.split(' ')
         ]
         self.sentences = [
             '花子 さん は 東京 に 行き まし た'.split(' '),
@@ -45,11 +45,12 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 0.5, 'recall': 0.5,
-                                  'f1_score': 0.5, 'num': 4},
-                          'LOC': {'precision': 1.0, 'recall': 1.0,
-                                  'f1_score': 1.0, 'num': 3}},
-                         result)
+        self.assertEqual(
+            {'LOC': {'f1_score': 0.8571428571428571, 'num': 3,
+                     'precision': 0.75, 'recall': 1.0},
+             'PSN': {'f1_score': 0.25, 'num': 4,
+                     'precision': 0.25, 'recall': 0.25}},
+            result)
 
     def test_known_only_report(self):
 
@@ -57,10 +58,11 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 1.0, 'recall': 1.0,
-                                  'f1_score': 1.0, 'num': 2},
-                          'LOC': {'precision': 1.0, 'recall': 1.0,
-                                  'f1_score': 1.0, 'num': 1}},
+
+        self.assertEqual({'LOC': {'f1_score': 1.0, 'num': 1,
+                                  'precision': 1.0, 'recall': 1.0},
+                          'PSN': {'f1_score': 0.6666666666666666,
+                                  'num': 2, 'precision': 1.0, 'recall': 0.5}},
                          result)
 
     def test_unknown_only_report(self):
@@ -69,10 +71,10 @@ class TestMiner(unittest.TestCase):
         self.assertTrue(all([k in ['PSN', 'LOC'] for k, v in result.items()]))
         self.assertEqual([k for k, v in result['PSN'].items()],
                          ['precision', 'recall', 'f1_score', 'num'])
-        self.assertEqual({'PSN': {'precision': 0, 'recall': 0,
-                                  'f1_score': 0, 'num': 2},
-                          'LOC': {'precision': 1.0, 'recall': 1.0,
-                                  'f1_score': 1.0, 'num': 2}},
+        self.assertEqual({'LOC': {'f1_score': 0.8, 'num': 2,
+                                  'precision': 2 / 3, 'recall': 1.0},
+                          'PSN': {'f1_score': 0, 'num': 2,
+                                  'precision': 0.0, 'recall': 0.0}},
                          result)
 
     def test__entity_indexes(self):
@@ -100,18 +102,16 @@ class TestMiner(unittest.TestCase):
     def test_return_miss_labelings(self):
 
         result = self.miner.return_miss_labelings()
-        expect = [{'answer': ['B-PSN', 'I-PSN', 'O', 'O',
-                              'B-LOC', 'I-LOC', 'O', 'O', 'O', 'O'],
-                   'predict': ['B-PSN', 'B-PSN', 'O', 'O',
-                               'B-LOC', 'I-LOC', 'O', 'O', 'O', 'O'],
-                   'sentence': ['山田', '太郎', '君', 'は',
-                                '東京', '駅', 'に', '向かい', 'まし', 'た']},
-                  {'answer': ['S-PSN', 'O', 'O', 'S-PSN', 'O', 'O',
-                              'B-LOC', 'I-LOC', 'E-LOC', 'O', 'O', 'O', 'O'],
-                   'predict': ['S-PSN', 'O', 'O', 'O', 'O', 'O',
-                               'B-LOC', 'I-LOC', 'E-LOC', 'O', 'O', 'O', 'O'],
-                   'sentence': ['花子', 'さん', 'と', 'ボブ', 'くん', 'は',
-                                '東京', 'スカイ', 'ツリー', 'に', '行き', 'まし', 'た']}]
+        expect = [
+            {'answer': self.answers[0],
+             'predict': self.predicts[0],
+             'sentence': self.sentences[0]},
+            {'answer': self.answers[1],
+             'predict': self.predicts[1],
+             'sentence': self.sentences[1]},
+            {'answer': self.answers[2],
+             'predict': self.predicts[2],
+             'sentence': self.sentences[2]}]
         self.assertEqual(result, expect)
 
     def test_return_answer_named_entities(self):
@@ -132,12 +132,24 @@ class TestMiner(unittest.TestCase):
 
     def test_segmentation_score(self):
 
-        result = self.miner.segmentation_score('default')
-        self.assertEqual(result, 5 / 7)
-        result = self.miner.segmentation_score('unknown')
-        self.assertEqual(result, 2 / 4)
-        result = self.miner.segmentation_score('known')
-        self.assertEqual(result, 3 / 3)
+        result = self.miner.segmentation_score('default', False)
+        self.assertEqual(
+            result, {'f1_score': 0.5333333333333333,
+                     'num': 7,
+                     'precision': 0.5,
+                     'recall': 0.5714285714285714})
+        result = self.miner.segmentation_score('unknown', False)
+        self.assertEqual(
+            result, {'f1_score': 0.4,
+                     'num': 4,
+                     'precision': 0.3333333333333333,
+                     'recall': 0.5})
+        result = self.miner.segmentation_score('known', False)
+        self.assertEqual(
+            result, {'f1_score': 0.8,
+                     'num': 3,
+                     'precision': 1.0,
+                     'recall': 0.6666666666666666})
 
     def test__is_end_of_label(self):
 
