@@ -70,6 +70,7 @@ LOC	 1.000        1.000     1.000      3
 |  return\_predict\_named\_entities()  |  return named entities along predicted label(predicts). |
 |  return\_answer\_named\_entities()  |  return named entities along answer label(answer). |
 |  return\_miss\_labelings() | return miss labeling sentences. |
+|  segmentation\_score(mode) | show parcentages of matching answer and predict labels.  if `known` or` unknown` for `mode`, return labeling accuracy for known or unknown NE. | 
 
 
 ## License
