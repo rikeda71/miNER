@@ -28,7 +28,8 @@ class Miner:
                  ]))
         self.known_words = {type_: [] for type_ in self.types}\
             if known_words is None else known_words
-        self.known_words.update({'ALL': [NE for k, v in self.known_words.items() for NE in v]})
+        self.known_words.update(
+            {'ALL': [NE for k, v in self.known_words.items() for NE in v]})
         self.check_known = True
         self.check_unknown = True
 
