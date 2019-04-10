@@ -37,7 +37,7 @@ class TestMiner(unittest.TestCase):
         self.assertEqual(self.miner.known_words, self.knowns)
         # check no setting known words
         m = Miner(self.answers, self.predicts, self.sentences)
-        self.assertEqual(m.known_words, {'PSN': [], 'LOC': []})
+        self.assertEqual(m.known_words, {'PSN': [], 'LOC': [], 'ALL': []})
 
     def test_default_report(self):
 
@@ -129,6 +129,15 @@ class TestMiner(unittest.TestCase):
         for (rk, rv), (ek, ev) in zip(result.items(), expect.items()):
             self.assertTrue(set(rv['PSN']) & set(ev['PSN']))
             self.assertTrue(set(rv['LOC']) & set(ev['LOC']))
+
+    def test_segmentation_score(self):
+
+        result = self.miner.segmentation_score('default')
+        self.assertEqual(result, 5 / 7)
+        result = self.miner.segmentation_score('unknown')
+        self.assertEqual(result, 2 / 4)
+        result = self.miner.segmentation_score('known')
+        self.assertEqual(result, 3 / 3)
 
     def test__is_end_of_label(self):
 
