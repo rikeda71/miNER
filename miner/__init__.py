@@ -1,4 +1,4 @@
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 from collections import defaultdict
 
 
@@ -200,11 +200,14 @@ class Miner:
     def num_of_ner(self, type_select: str) -> int:
         return len(self._entity_indexes(self.answers, type_select))
 
-    def segmentation_score(self, mode: str = 'default'):
+    def segmentation_score(self, mode: str = 'default', print_: bool = True) \
+            -> Dict[str, Union[float, int]]:
         """
         return segmentation score
         (return parcentages of matching answer and predict labels)
         :param mode: default, unknown, or known
+        :param print_: print flag.
+                       if this flag equal 'True', print report of NER result.
         :return segmentation score
         """
 
@@ -218,13 +221,20 @@ class Miner:
             self.check_known = True
             self.check_unknown = True
 
-        ans_entities = set(self._entity_indexes(self.answers, 'ALL'))
-        pred_entities = set(self._entity_indexes(self.predicts, 'ALL'))
+        report = {'precision': self.precision('ALL'),
+                  'recall': self.recall('ALL'),
+                  'f1_score': self.f1_score('ALL'),
+                  'num': self.num_of_ner('ALL')}
 
-        correct_num = len(ans_entities & pred_entities)
-        ans_num = len(ans_entities)
+        if print_:
+            print('\n\tprecision    recall    f1_score   num')
+            print('SEG', end='\t')
+            print('{0: .3f}'.format(report['precision']), end='       ')
+            print('{0: .3f}'.format(report['recall']), end='    ')
+            print('{0: .3f}'.format(report['f1_score']), end='     ')
+            print('{0: d}'.format(int(report['num'])), end='\n')
 
-        return correct_num / ans_num if ans_num > 0 else 0.0
+        return report
 
     def _entity_indexes(self, seqs: List[List[str]], type_select: str)\
             -> List[Tuple[str, int, int]]:
