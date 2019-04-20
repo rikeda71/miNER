@@ -10,6 +10,7 @@
 - Tagging Scheme
     - IOB2
     - BIOES
+    - BIOUL
 - metrics
     - precision
     - recall
@@ -70,7 +71,7 @@ LOC	 1.000        1.000     1.000      3
 |  return\_predict\_named\_entities()  |  推定したラベルに対する固有表現を返す．  |
 |  return\_answer\_named\_entities()  |  正解のラベルに対する固有表現を返す．  |
 |  return\_miss\_labelings() | ラベリングに失敗した文と正解・推定ラベルを返す． |
-|  segmentation_score(mode) | IOB2やBIOESのラベリングの精度を返す．`mode`に`known`または`unknown`を指定すると，既知または未知の固有表現に対してのみのラベリングの精度を返す． |
+|  segmentation\_score(mode) | IOB2やBIOESのラベリングの精度を返す．`mode`に`known`または`unknown`を指定すると，既知または未知の固有表現に対してのみのラベリングの精度を返す． |
 
 ## License
 
