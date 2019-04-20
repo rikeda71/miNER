@@ -348,11 +348,11 @@ class Miner:
         :return: end -> True, not end -> False
         """
 
-        if prev_top in ['E', 'S']:
+        if prev_top in ['E', 'S', 'L', 'U']:
             return True
         elif prev_top == 'B' and now_top in ['B', 'O']:
             return True
-        elif prev_top == 'I' and now_top in ['B', 'O', 'S']:
+        elif prev_top == 'I' and now_top in ['B', 'O', 'S', 'U']:
             return True
         elif prev_top != 'O' and prev_type != now_type:
             return True
@@ -368,7 +368,7 @@ class Miner:
         :return: begin -> True, not begin -> False
         """
 
-        if now_top in ['B', 'S']:
+        if now_top in ['B', 'S', 'U']:
             return True
         elif now_top != 'O' and prev_type and prev_type != now_type:
             return True
