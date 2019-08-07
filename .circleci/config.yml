@@ -19,7 +19,7 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install flake8
+            pip install flake8 cython
 
       - save_cache:
           paths:
