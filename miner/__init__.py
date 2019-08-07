@@ -1,6 +1,10 @@
 from typing import List, Dict, Tuple, Union
 from collections import defaultdict
 
+from .utils import entity_indexes
+from .utils import is_end_of_label
+from .utils import is_begin_of_label
+
 
 class Miner:
 
@@ -54,10 +58,11 @@ class Miner:
         report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
-            report[type_]['precision'] = self.precision(type_)
-            report[type_]['recall'] = self.recall(type_)
-            report[type_]['f1_score'] = self.f1_score(type_)
-            report[type_]['num'] = self.num_of_ner(type_)
+            p, r, f1 = self.evaluations(type_)
+            report[type_]['precision'] = p
+            report[type_]['recall'] = r
+            report[type_]['f1_score'] = f1
+            report[type_]['num'] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -88,10 +93,11 @@ class Miner:
         report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
-            report[type_]['precision'] = self.precision(type_)
-            report[type_]['recall'] = self.recall(type_)
-            report[type_]['f1_score'] = self.f1_score(type_)
-            report[type_]['num'] = self.num_of_ner(type_)
+            p, r, f1 = self.evaluations(type_)
+            report[type_]['precision'] = p
+            report[type_]['recall'] = r
+            report[type_]['f1_score'] = f1
+            report[type_]['num'] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -122,10 +128,11 @@ class Miner:
         report = {type_: defaultdict(float) for type_ in self.types}
 
         for type_ in self.types:
-            report[type_]['precision'] = self.precision(type_)
-            report[type_]['recall'] = self.recall(type_)
-            report[type_]['f1_score'] = self.f1_score(type_)
-            report[type_]['num'] = self.num_of_ner(type_)
+            p, r, f1 = self.evaluations(type_)
+            report[type_]['precision'] = p
+            report[type_]['recall'] = r
+            report[type_]['f1_score'] = f1
+            report[type_]['num'] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -156,7 +163,7 @@ class Miner:
     def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
-    def precision(self, type_select: str) -> float:
+    def evaluations(self, type_select: str) -> Tuple[float, float, float]:
         """
         return precision score
         :param type_select: NER label type
@@ -165,39 +172,21 @@ class Miner:
 
         ans_entities = set(self._entity_indexes(self.answers, type_select))
         pred_entities = set(self._entity_indexes(self.predicts, type_select))
-
         correct_num = len(ans_entities & pred_entities)
         pred_num = len(pred_entities)
-
-        return correct_num / pred_num if pred_num > 0 else 0
-
-    def recall(self, type_select: str) -> float:
-        """
-        return recall score
-        :param type_select: NER label type
-        :return: recall score
-        """
-
-        ans_entities = set(self._entity_indexes(self.answers, type_select))
-        pred_entities = set(self._entity_indexes(self.predicts, type_select))
-
-        correct_num = len(ans_entities & pred_entities)
         ans_num = len(ans_entities)
+        p = correct_num / pred_num if pred_num > 0 else 0.0
+        r = correct_num / ans_num if ans_num > 0 else 0.0
+        f1 = 2 * p * r / (p + r) if p + r > 0 else 0
+        return p, r, f1
 
-        return correct_num / ans_num if ans_num > 0 else 0
-
-    def f1_score(self, type_select: str) -> float:
+    def num_of_ne(self, type_select: str) -> int:
         """
-        return f-measure score
+        return number of Named Entity
         :param type_select: NER label type
-        :return: f-measure score
+        :return:
         """
 
-        p = self.precision(type_select)
-        r = self.recall(type_select)
-        return 2 * p * r / (p + r) if p + r > 0 else 0
-
-    def num_of_ner(self, type_select: str) -> int:
         return len(self._entity_indexes(self.answers, type_select))
 
     def segmentation_score(self, mode: str = 'default', print_: bool = True) \
@@ -221,10 +210,11 @@ class Miner:
             self.check_known = True
             self.check_unknown = True
 
-        report = {'precision': self.precision('ALL'),
-                  'recall': self.recall('ALL'),
-                  'f1_score': self.f1_score('ALL'),
-                  'num': self.num_of_ner('ALL')}
+        p, r, f1 = self.evaluations('ALL')
+        report = {'precision': p,
+                  'recall': r,
+                  'f1_score': f1,
+                  'num': self.num_of_ne('ALL')}
 
         if print_:
             print('\n\tprecision    recall    f1_score   num')
@@ -248,31 +238,14 @@ class Miner:
                   (type, begin index, end index), ... ]
         """
 
-        entities = []
         sequences = [label for seq in seqs for label in seq + ['O']]
         sentences = [word for sentence in self.sentences
                      for word in sentence + ['']]
-        prev_top = 'O'
-        prev_type = ''
-        focus_idx = 0
 
         seq_label_pairs = zip(sequences + ['O'], sentences + [''])
-        for i, (label, words) in enumerate(seq_label_pairs):
-            top = label[0]
-            type_ = label.split('-')[-1]
-            word = ''.join(sentences[focus_idx: i])
-
-            if self._is_end_of_label(prev_top, top, prev_type, type_) \
-                and type_select in [prev_type, '', 'ALL'] \
-                    and self._check_add_entity(word, type_select):
-                entities.append((prev_type, focus_idx, i - 1))
-
-            if self._is_begin_of_label(top, prev_type, type_):
-                focus_idx = i
-            prev_top = top
-            prev_type = type_
-
-        return entities
+        return entity_indexes(sentences, seq_label_pairs, type_select,
+                              self.check_known, self.check_unknown,
+                              self.known_words)
 
     def _return_named_entities(self, labels: List[List[str]])\
             -> Dict[str, Dict[str, List[str]]]:
@@ -299,14 +272,14 @@ class Miner:
             top = label[0]
             type_ = label.split('-')[-1]
 
-            if self._is_end_of_label(prev_top, top, prev_type, type_):
+            if is_end_of_label(prev_top, top, prev_type, type_):
                 word = ''.join(sentences[focus_idx: i])
                 if word in self.known_words[prev_type]:
                     knownentities[prev_type].append(word)
                 else:
                     unknownentities[prev_type].append(word)
 
-            if self._is_begin_of_label(top, prev_type, type_):
+            if is_begin_of_label(top, prev_type, type_):
                 focus_idx = i
             prev_top = top
             prev_type = type_
@@ -336,43 +309,6 @@ class Miner:
             print('{0: .3f}'.format(result[type_]['recall']), end='    ')
             print('{0: .3f}'.format(result[type_]['f1_score']), end='     ')
             print('{0: d}'.format(int(result[type_]['num'])), end='\n')
-
-    def _is_end_of_label(self, prev_top: str, now_top: str,
-                         prev_type: str, now_type: str) -> bool:
-        """
-        check if named entity label is end
-        :param prev_top:
-        :param now_top:
-        :param prev_type:
-        :param now_type:
-        :return: end -> True, not end -> False
-        """
-
-        if prev_top in ['E', 'S', 'L', 'U']:
-            return True
-        elif prev_top == 'B' and now_top in ['B', 'O']:
-            return True
-        elif prev_top == 'I' and now_top in ['B', 'O', 'S', 'U']:
-            return True
-        elif prev_top != 'O' and prev_type != now_type:
-            return True
-        return False
-
-    def _is_begin_of_label(self, now_top: str,
-                           prev_type: str, now_type: str) -> bool:
-        """
-        check if named entity label is begin
-        :param now_top: now scheme
-        :param prev_type: previous label
-        :param now_type: now label
-        :return: begin -> True, not begin -> False
-        """
-
-        if now_top in ['B', 'S', 'U']:
-            return True
-        elif now_top != 'O' and prev_type and prev_type != now_type:
-            return True
-        return False
 
     def _check_add_entity(self, word: str, type_: str) -> bool:
         """
