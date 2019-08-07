@@ -20,6 +20,7 @@
 ## Requirements
 
 - python3
+- cython
 
 
 ## Installation

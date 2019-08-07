@@ -20,6 +20,7 @@ We can evaluate the performance of NER by distinguishing between known entities 
 ## Requirements
 
 - python3
+- cython
 
 
 ## Installation
