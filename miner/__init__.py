@@ -163,6 +163,12 @@ class Miner:
     def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
+    def return_answer_named_entities_no_set(self) -> Dict[str, Dict[str, List[str]]]:
+        return self._return_named_entities(self.answers, False)
+
+    def return_predict_named_entities_no_set(self) -> Dict[str, Dict[str, List[str]]]:
+        return self._return_named_entities(self.predicts, False)
+
     def evaluations(self, type_select: str) -> Tuple[float, float, float]:
         """
         return precision score
@@ -247,11 +253,12 @@ class Miner:
                               self.check_known, self.check_unknown,
                               self.known_words)
 
-    def _return_named_entities(self, labels: List[List[str]])\
+    def _return_named_entities(self, labels: List[List[str]], to_set: bool = True)\
             -> Dict[str, Dict[str, List[str]]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
+        :param to_set: if True, set(entities list)
         :return  {'known': {type1: ['named entity', 'named entity', ... ],
                             type2: [...] },
                   'unknown': {type1: ['named entity', 'named entity', ... ],
@@ -284,9 +291,10 @@ class Miner:
             prev_top = top
             prev_type = type_
 
-        for type_ in self.types:
-            knownentities[type_] = list(set(knownentities[type_]))
-            unknownentities[type_] = list(set(unknownentities[type_]))
+        if to_set:
+            for type_ in self.types:
+                knownentities[type_] = list(set(knownentities[type_]))
+                unknownentities[type_] = list(set(unknownentities[type_]))
 
         return {'known': knownentities, 'unknown': unknownentities}
 
