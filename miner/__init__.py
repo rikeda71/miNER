@@ -163,10 +163,12 @@ class Miner:
     def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
-    def return_answer_named_entities_no_set(self) -> Dict[str, Dict[str, List[str]]]:
+    def return_answer_named_entities_no_set(self) \
+            -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.answers, False)
 
-    def return_predict_named_entities_no_set(self) -> Dict[str, Dict[str, List[str]]]:
+    def return_predict_named_entities_no_set(self) \
+            -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts, False)
 
     def evaluations(self, type_select: str) -> Tuple[float, float, float]:
@@ -253,7 +255,8 @@ class Miner:
                               self.check_known, self.check_unknown,
                               self.known_words)
 
-    def _return_named_entities(self, labels: List[List[str]], to_set: bool = True)\
+    def _return_named_entities(self, labels: List[List[str]],
+                               to_set: bool = True)\
             -> Dict[str, Dict[str, List[str]]]:
         """
         return named entities
