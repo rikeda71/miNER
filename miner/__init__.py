@@ -163,13 +163,13 @@ class Miner:
     def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
-    def return_answer_named_entities_no_set(self) \
+    def return_answer_named_entities_no_set(self, to_join: bool = True) \
             -> Dict[str, Dict[str, List[str]]]:
-        return self._return_named_entities(self.answers, False)
+        return self._return_named_entities(self.answers, False, to_join)
 
-    def return_predict_named_entities_no_set(self) \
+    def return_predict_named_entities_no_set(self, to_join: bool = True) \
             -> Dict[str, Dict[str, List[str]]]:
-        return self._return_named_entities(self.predicts, False)
+        return self._return_named_entities(self.predicts, False, to_join)
 
     def evaluations(self, type_select: str) -> Tuple[float, float, float]:
         """
@@ -256,12 +256,14 @@ class Miner:
                               self.known_words)
 
     def _return_named_entities(self, labels: List[List[str]],
-                               to_set: bool = True)\
+                               to_set: bool = True,
+                               to_join: bool = True)\
             -> Dict[str, Dict[str, List[str]]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
         :param to_set: if True, set(entities list)
+        :param to_join: if True, NE is set str format. if False, list format.
         :return  {'known': {type1: ['named entity', 'named entity', ... ],
                             type2: [...] },
                   'unknown': {type1: ['named entity', 'named entity', ... ],
@@ -284,10 +286,11 @@ class Miner:
 
             if is_end_of_label(prev_top, top, prev_type, type_):
                 word = ''.join(sentences[focus_idx: i])
+                entity = word if to_join else sentences[focus_idx: i]
                 if word in self.known_words[prev_type]:
-                    knownentities[prev_type].append(word)
+                    knownentities[prev_type].append(entity)
                 else:
-                    unknownentities[prev_type].append(word)
+                    unknownentities[prev_type].append(entity)
 
             if is_begin_of_label(top, prev_type, type_):
                 focus_idx = i
