@@ -147,13 +147,13 @@ class Miner:
         get miss labeling sentences, predict labels, and answer labels
         :return: miss labeling sentences, predict labels, and answer labels
                  [{'sentence': ['', '', ..., ''],
-                  'predict': ['', '', ..., ''],
                   'answer': ['', '', ..., '']},
+                  'predict': ['', '', ..., ''],
                   {'sentence': ...
                  ]
         """
 
-        return [{'sentence': s, 'predict': p, 'answer': a}
+        return [{'sentence': s, 'answer': a, 'predict': p}
                 for p, a, s in zip(self.predicts, self.answers, self.sentences)
                 if p != a]
 
