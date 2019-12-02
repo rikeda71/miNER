@@ -11,7 +11,7 @@ ext_modules = [
 
 setup(
     name='mi-ner',
-    version='0.5.1',
+    version='0.6.0',
     description='A python library for named entity recognition evaluation',
     long_description=readme,
     long_description_content_type='text/markdown',

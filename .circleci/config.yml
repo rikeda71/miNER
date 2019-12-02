@@ -2,7 +2,7 @@ version: 2
 jobs:
   build:
     docker:
-      - image: circleci/python:3.7.1
+      - image: circleci/python:3.7
 
     working_directory: ~/repo
 
@@ -31,7 +31,7 @@ jobs:
           command: |
             . venv/bin/activate
             python setup.py test
-            flake8 miner/*.py
+            flake8 --max-line-length=88 miner/*.py
 
       - store_artifacts:
           path: test-reports

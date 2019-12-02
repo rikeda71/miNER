@@ -1,3 +1,4 @@
+#cython: language_level=3
 from typing import List, Dict
 
 
@@ -20,13 +21,13 @@ cpdef entity_indexes(sentences, seq_label_pairs, type_select: str,
         int focus_idx = 0
         entities = []
 
-    for i, (label, words) in enumerate(seq_label_pairs):
+    for i, (label, _) in enumerate(seq_label_pairs):
         top = label[0]
         type_ = label.split('-')[-1]
         word = ''.join(sentences[focus_idx: i])
 
         if is_end_of_label(prev_top, top, prev_type, type_) \
-                and type_select in [prev_type, '', 'ALL'] \
+                and type_select in [prev_type, '', 'overall'] \
                 and check_add_entity(word, type_select, check_known,
                                      check_unknown, known_words):
             entities.append((prev_type, focus_idx, i - 1))

@@ -1,17 +1,17 @@
-from typing import List, Dict, Tuple, Union
 from collections import defaultdict
+from typing import Dict, List, Tuple, Union
 
-from .utils import entity_indexes
-from .utils import is_end_of_label
-from .utils import is_begin_of_label
+from .utils import entity_indexes, is_begin_of_label, is_end_of_label
 
 
 class Miner:
-
-    def __init__(self, answers: List[List[str]],
-                 predicts: List[List[str]],
-                 sentences: List[List[str]],
-                 known_words: Dict[str, List[str]] = None):
+    def __init__(
+        self,
+        answers: List[List[str]],
+        predicts: List[List[str]],
+        sentences: List[List[str]],
+        known_words: Dict[str, List[str]] = None,
+    ):
         """
         :param answers: answer labels list [[labels], [labels], ...]
         :param predicts: predicrt labels list [[labels], [labels], ...]
@@ -25,20 +25,20 @@ class Miner:
         self.answers = answers
         self.predicts = predicts
         self.sentences = sentences
-        self.types = tuple(
-            set([type_.split('-')[-1]
-                 for seq in self.answers
-                 for type_ in seq if type_ != 'O'
-                 ]))
-        self.known_words = {type_: [] for type_ in self.types}\
-            if known_words is None else known_words
+        types = list(
+            set([t.split("-")[-1] for seq in self.answers for t in seq if t != "O"])
+        )
+        self.types = sorted(types) + ["overall"]
+        self.known_words = (
+            {type_: [] for type_ in self.types} if known_words is None else known_words
+        )
         self.known_words.update(
-            {'ALL': [NE for k, v in self.known_words.items() for NE in v]})
+            {"overall": [NE for k, v in self.known_words.items() for NE in v]}
+        )
         self.check_known = True
         self.check_unknown = True
 
-    def default_report(self, print_: bool = False)\
-            -> Dict[str, Dict[str, float]]:
+    def default_report(self, print_: bool = False) -> Dict[str, Dict[str, float]]:
         """
         return report of named entity recognition
         :param print_: print flag.
@@ -59,10 +59,10 @@ class Miner:
 
         for type_ in self.types:
             p, r, f1 = self.evaluations(type_)
-            report[type_]['precision'] = p
-            report[type_]['recall'] = r
-            report[type_]['f1_score'] = f1
-            report[type_]['num'] = self.num_of_ne(type_)
+            report[type_]["precision"] = p
+            report[type_]["recall"] = r
+            report[type_]["f1_score"] = f1
+            report[type_]["num"] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -72,8 +72,7 @@ class Miner:
 
         return report
 
-    def known_only_report(self, print_: bool = False)\
-            -> Dict[str, Dict[str, float]]:
+    def known_only_report(self, print_: bool = False) -> Dict[str, Dict[str, float]]:
         """
         return report of known named entity recognition
         :param print_: print flag.
@@ -94,10 +93,10 @@ class Miner:
 
         for type_ in self.types:
             p, r, f1 = self.evaluations(type_)
-            report[type_]['precision'] = p
-            report[type_]['recall'] = r
-            report[type_]['f1_score'] = f1
-            report[type_]['num'] = self.num_of_ne(type_)
+            report[type_]["precision"] = p
+            report[type_]["recall"] = r
+            report[type_]["f1_score"] = f1
+            report[type_]["num"] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -107,8 +106,7 @@ class Miner:
 
         return report
 
-    def unknown_only_report(self, print_: bool = False)\
-            -> Dict[str, Dict[str, float]]:
+    def unknown_only_report(self, print_: bool = False) -> Dict[str, Dict[str, float]]:
         """
         return report of unknown named entity recognition
         :param print_: print flag.
@@ -129,10 +127,10 @@ class Miner:
 
         for type_ in self.types:
             p, r, f1 = self.evaluations(type_)
-            report[type_]['precision'] = p
-            report[type_]['recall'] = r
-            report[type_]['f1_score'] = f1
-            report[type_]['num'] = self.num_of_ne(type_)
+            report[type_]["precision"] = p
+            report[type_]["recall"] = r
+            report[type_]["f1_score"] = f1
+            report[type_]["num"] = self.num_of_ne(type_)
 
         for type_ in self.types:
             report[type_] = dict(report[type_])
@@ -153,9 +151,11 @@ class Miner:
                  ]
         """
 
-        return [{'sentence': s, 'answer': a, 'predict': p}
-                for p, a, s in zip(self.predicts, self.answers, self.sentences)
-                if p != a]
+        return [
+            {"sentence": s, "answer": a, "predict": p}
+            for p, a, s in zip(self.predicts, self.answers, self.sentences)
+            if p != a
+        ]
 
     def return_answer_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.answers)
@@ -163,12 +163,14 @@ class Miner:
     def return_predict_named_entities(self) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts)
 
-    def return_answer_named_entities_no_set(self, to_join: bool = True) \
-            -> Dict[str, Dict[str, List[str]]]:
+    def return_answer_named_entities_no_set(
+        self, to_join: bool = True
+    ) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.answers, False, to_join)
 
-    def return_predict_named_entities_no_set(self, to_join: bool = True) \
-            -> Dict[str, Dict[str, List[str]]]:
+    def return_predict_named_entities_no_set(
+        self, to_join: bool = True
+    ) -> Dict[str, Dict[str, List[str]]]:
         return self._return_named_entities(self.predicts, False, to_join)
 
     def evaluations(self, type_select: str) -> Tuple[float, float, float]:
@@ -197,8 +199,9 @@ class Miner:
 
         return len(self._entity_indexes(self.answers, type_select))
 
-    def segmentation_score(self, mode: str = 'default', print_: bool = True) \
-            -> Dict[str, Union[float, int]]:
+    def segmentation_score(
+        self, mode: str = "default", print_: bool = True
+    ) -> Dict[str, Union[float, int]]:
         """
         return segmentation score
         (return parcentages of matching answer and predict labels)
@@ -208,34 +211,37 @@ class Miner:
         :return segmentation score
         """
 
-        if mode == 'unknown':
+        if mode == "unknown":
             self.check_known = False
             self.check_unknown = True
-        elif mode == 'known':
+        elif mode == "known":
             self.check_known = True
             self.check_unknown = False
         else:
             self.check_known = True
             self.check_unknown = True
 
-        p, r, f1 = self.evaluations('ALL')
-        report = {'precision': p,
-                  'recall': r,
-                  'f1_score': f1,
-                  'num': self.num_of_ne('ALL')}
+        p, r, f1 = self.evaluations("overall")
+        report = {
+            "precision": p,
+            "recall": r,
+            "f1_score": f1,
+            "num": self.num_of_ne("overall"),
+        }
 
         if print_:
-            print('\n\tprecision    recall    f1_score   num')
-            print('SEG', end='\t')
-            print('{0: .3f}'.format(report['precision']), end='       ')
-            print('{0: .3f}'.format(report['recall']), end='    ')
-            print('{0: .3f}'.format(report['f1_score']), end='     ')
-            print('{0: d}'.format(int(report['num'])), end='\n')
+            print("\n\tprecision    recall    f1_score   num")
+            print("SEG", end="\t")
+            print("{0: .3f}".format(report["precision"]), end="       ")
+            print("{0: .3f}".format(report["recall"]), end="    ")
+            print("{0: .3f}".format(report["f1_score"]), end="     ")
+            print("{0: d}".format(int(report["num"])), end="\n")
 
         return report
 
-    def _entity_indexes(self, seqs: List[List[str]], type_select: str)\
-            -> List[Tuple[str, int, int]]:
+    def _entity_indexes(
+        self, seqs: List[List[str]], type_select: str
+    ) -> List[Tuple[str, int, int]]:
         """
         return named entities indexes
         :param seqs: labels list [[labels0], [labels1], ... ]
@@ -246,19 +252,22 @@ class Miner:
                   (type, begin index, end index), ... ]
         """
 
-        sequences = [label for seq in seqs for label in seq + ['O']]
-        sentences = [word for sentence in self.sentences
-                     for word in sentence + ['']]
+        sequences = [label for seq in seqs for label in seq + ["O"]]
+        sentences = [word for sentence in self.sentences for word in sentence + [""]]
 
-        seq_label_pairs = zip(sequences + ['O'], sentences + [''])
-        return entity_indexes(sentences, seq_label_pairs, type_select,
-                              self.check_known, self.check_unknown,
-                              self.known_words)
+        seq_label_pairs = zip(sequences + ["O"], sentences + [""])
+        return entity_indexes(
+            sentences,
+            seq_label_pairs,
+            type_select,
+            self.check_known,
+            self.check_unknown,
+            self.known_words,
+        )
 
-    def _return_named_entities(self, labels: List[List[str]],
-                               to_set: bool = True,
-                               to_join: bool = True)\
-            -> Dict[str, Dict[str, List[str]]]:
+    def _return_named_entities(
+        self, labels: List[List[str]], to_set: bool = True, to_join: bool = True
+    ) -> Dict[str, Dict[str, List[str]]]:
         """
         return named entities
         :param labels: labels list (self.answers or self.predicts)
@@ -272,21 +281,20 @@ class Miner:
 
         knownentities = {type_: [] for type_ in self.types}
         unknownentities = {type_: [] for type_ in self.types}
-        sequences = [seq for label in labels for seq in label + ['O']]
-        sentences = [word for sentence in self.sentences
-                     for word in sentence + ['']]
-        prev_top = 'O'
-        prev_type = ''
+        sequences = [seq for label in labels for seq in label + ["O"]]
+        sentences = [word for sentence in self.sentences for word in sentence + [""]]
+        prev_top = "O"
+        prev_type = ""
         focus_idx = 0
 
-        seq_label_pairs = zip(sequences + ['O'], sentences + [''])
+        seq_label_pairs = zip(sequences + ["O"], sentences + [""])
         for i, (label, words) in enumerate(seq_label_pairs):
             top = label[0]
-            type_ = label.split('-')[-1]
+            type_ = label.split("-")[-1]
 
             if is_end_of_label(prev_top, top, prev_type, type_):
-                word = ''.join(sentences[focus_idx: i])
-                entity = word if to_join else sentences[focus_idx: i]
+                word = "".join(sentences[focus_idx:i])
+                entity = word if to_join else sentences[focus_idx:i]
                 if word in self.known_words[prev_type]:
                     knownentities[prev_type].append(entity)
                 else:
@@ -302,7 +310,7 @@ class Miner:
                 knownentities[type_] = list(set(knownentities[type_]))
                 unknownentities[type_] = list(set(unknownentities[type_]))
 
-        return {'known': knownentities, 'unknown': unknownentities}
+        return {"known": knownentities, "unknown": unknownentities}
 
     def _print_report(self, result: Dict[str, Dict[str, float]]):
         """
@@ -316,13 +324,13 @@ class Miner:
                                    'f1_score': f-measure}, ... }
         """
 
-        print('\n\tprecision    recall    f1_score   num')
+        print("\n\tprecision    recall    f1_score   num")
         for type_ in self.types:
-            print(type_, end='\t')
-            print('{0: .3f}'.format(result[type_]['precision']), end='       ')
-            print('{0: .3f}'.format(result[type_]['recall']), end='    ')
-            print('{0: .3f}'.format(result[type_]['f1_score']), end='     ')
-            print('{0: d}'.format(int(result[type_]['num'])), end='\n')
+            print(type_, end="\t")
+            print("{0: .3f}".format(result[type_]["precision"]), end="       ")
+            print("{0: .3f}".format(result[type_]["recall"]), end="    ")
+            print("{0: .3f}".format(result[type_]["f1_score"]), end="     ")
+            print("{0: d}".format(int(result[type_]["num"])), end="\n")
 
     def _check_add_entity(self, word: str, type_: str) -> bool:
         """
